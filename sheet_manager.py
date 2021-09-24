@@ -24,7 +24,7 @@ client = gspread.authorize(creds)
 sheet = client.open("Processos").sheet1
 
 
-class DataManager:
+class SheetManager:
     #This class is responsible for talking to the Google Sheet.
 
     def __init__(self):
@@ -66,9 +66,14 @@ class DataManager:
                 time.sleep(3)
 
             else:
-
-                sheet.update_cell(row_num, 2, value)
+                #TODO FAZER ESCREVER ANDAMENTOS: VALUES DO DICTIONARY CRIADO SELF.DICT_ANDAMENTOS
+                sheet.update_cell(row_num, 2, value) # has to target value to write not key
                 sheet.update_cell(row_num,3, f"Nova atualizacao detectada em {current_day}")
                 row_num = row_num +1
                 print(row_num)
                 time.sleep(3)
+
+
+    def get_date(self):
+        row_num = 2
+
