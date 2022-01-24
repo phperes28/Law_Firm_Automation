@@ -5,8 +5,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 import datetime
 import time
 
-
-
 WEBSITE = "https://pesquisa.apps.tcu.gov.br/#/pesquisa/processo"
 
 
@@ -15,7 +13,7 @@ ULTIMA_MOV = '//*[@id="lista-resultado__itens"]/ul/li/div/div[1]/span/ul[2]/li'
 TITULO_PROCESSO = '//*[@id="link_resultado_0"]/h3'
 ULTIMAS_MOV = '#conteudo_movimentacoes > ul > li:nth-child(1)'
 
-SEGUNDOS = 4
+SEGUNDOS = 6
 
 
 class TCUScraper:
@@ -159,7 +157,4 @@ class TCUScraper:
 
 
 
-#TODO ADICIONAR CADA NUMERO DE PROCESSO A UMA LISTA COM TODOS OS PROCESSOS
-#TODO ADICIONAR CADA LISTA DE ANDAMENTOS A UM DICIONARIO C
-#TODO criar dicionario com os valores sendo numero do processo Key e lista com andamentos Value
 

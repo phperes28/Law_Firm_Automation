@@ -3,62 +3,69 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import datetime
 import time
-from send_email import send_gmail
+from send_email import send_gmail2, send_email
 from sheet_manager import SheetManager
 from DataManager import DataManager
+from File_Manager import FileManager
 
 
 current_time = time.time()
 print("Simbora, carai")
 
-#---------------------------------------------------Google Drive and Sheet Connect-------------------------------------
+
 
 sheet = SheetManager()
 bot = TCUScraper()
 
-
-#---------------------------------------------------------------------------------------------------------------------
 processos= []
+p_number = []
 
-
+#criar dicionario onde numero do processo eh key e lista de andamento value
 
 # Gets process numbers and pass it to the get_info function to return last updates
 column = sheet.get_first_col()
 for processo in column[1:]:
     print(processo)
+    p_number.append(processo)
     bot.get_info(processo)
+    #write all info on sheet
+
+
 
     # Initialize data_manager and calls functions to break lines and formmat date
     try:
         data_m = DataManager(processo, bot.ultimas_mov)
         data_m.break_line()
         data_m.format_content()
-        data_m.compare_dates()
-        # data_m.process_info()
-        processos.append(data_m.to_dict())
+
+    #Get date from sheet and compare with new dates, if new update write nem date to sheet
+        if data_m.compare_dates(sheet.get_date()) == True:
+            sheet.write_date(data_m.get_last_date(), sheet.get_cell_num(processo))
+            processos.append(data_m.format_andamentos())
+            #ver se so os processos com data maior esta sendo adicionados
+            try:
+                novo_dict = zip(p_number, processos)
+                processo_com_andamento = dict(novo_dict)
+                print(processo_com_andamento)
+                send_email(processo_com_andamento)
+            except:
+                pass
+
+
+
 
     except AttributeError:
         print(f"falha ao buscar informacoes do processo {processo}")
 
 
-    send_gmail(current_time, processos)
+
+#----------------------------------------Writes info to TXT Documento-------------------------------------#
+
+# file_manager = FileManager(processos, p_number)
+# file_manager.write_info()
+# send_gmail2()
 
 
-
-    # data_m.format_hour()
-    # data_m.format_content()
-
-
-    # if data_m.format_dates() > ultima_data_planilha:
-    #     data_m.format_dates()
-
-
-sheet.write_updates(bot.processos_dict)
-
-
-
-
-# send_gmail(bot.andamentos)   MANDAR EMAIL POR ULTIMO
 
 
 
@@ -70,15 +77,9 @@ print(f"Processo concluido em {total_time} minutos")
 
 
 
-bot.Andamentos()
-
-
-# CREATE A DICTIONARY WITH THE DATA WITH PROCESS NUMBER AS KEY AND LAST UPDATE AS VALUE TO SEND AS EMAIL.
 
 
 
-
-#fechar tela no final
 
 
 

@@ -33,6 +33,9 @@ class SheetManager:
         self.client = client
         self.client = sheet
         self.destination_data = {}
+        self.date = []
+        self.row_num = 2
+        self.col_num = 2
 
     def get_records(self):
         data = sheet.get_all_records()
@@ -51,10 +54,6 @@ class SheetManager:
         cell = sheet.cell(row, col).value
         return cell
 
-    def insert(self):
-        row = ["I'm","inserting","a","row","into","a,","Spreadsheet","with","Python"]
-        index = 13
-        sheet.insert_row(row, index)
 
     def write_updates(self, andamentos):
         row_num = 2
@@ -66,7 +65,7 @@ class SheetManager:
                 time.sleep(3)
 
             else:
-                #TODO FAZER ESCREVER ANDAMENTOS: VALUES DO DICTIONARY CRIADO SELF.DICT_ANDAMENTOS
+
                 sheet.update_cell(row_num, 2, value) # has to target value to write not key
                 sheet.update_cell(row_num,3, f"Nova atualizacao detectada em {current_day}")
                 row_num = row_num +1
@@ -75,5 +74,30 @@ class SheetManager:
 
 
     def get_date(self):
-        row_num = 2
+
+        cell = sheet.cell(self.row_num, self.col_num).value
+        self.row_num += 1
+        try:
+            datetime_date = datetime.datetime.strptime(cell, "%d/%m/%Y %H:%M:%S")
+        except ValueError:
+            datetime_date = datetime.datetime.strptime(cell, "%d/%m/%Y %H:%M:%S")
+        except TypeError:
+            pass
+            #if Null, must get last update date and write it to sheet
+        return datetime_date
+
+
+    def write_date(self, last_date,row_num):
+        sheet.update_cell(row_num, 2, last_date)
+
+
+    def get_cell_num(self,p_number):
+        cell = sheet.find(p_number)
+        cell_row = cell.row
+        return cell_row
+
+
+
+
+        #TODO- WRITE DATE OF LAST ANDAMENTO ON SHEET
 

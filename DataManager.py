@@ -1,20 +1,27 @@
 import datetime
+from django.utils.encoding import smart_str
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
 
 class DataManager:
 
+
     def __init__(self, p_number, ultimas_mov):
         self.p_number = p_number
         self.ultimas_mov = ultimas_mov
+        self.ultimas_mov_encoded = []
         self.andamentos = []
 
     def break_line(self):
-        for mov in self.ultimas_mov:
-                andamentos = []
-                andamentos.append(mov.text)
-                self.nova_lista = andamentos[0].split("\n")
-                # print(self.nova_lista)
-                return self.nova_lista
+        try:
+            for mov in self.ultimas_mov:
+                    andamentos = []
+                    andamentos.append(mov.text)
+                    self.nova_lista = andamentos[0].split("\n")
+                    # print(self.nova_lista)
+                    return self.nova_lista
+        except NoSuchElementException or StaleElementReferenceException:
+            self.andamentos.append(f"Erro ao formatar dados do processo {self.p_number}")
 
 
 
@@ -25,7 +32,7 @@ class DataManager:
         self.formated_content = []
         self.data_andamento_formatada = []
         self.novos_andamentos = []
-        self.andamentos_dict = {}
+        self.andamentos_formated = []
 
         for andamento in self.nova_lista:
 
@@ -48,40 +55,54 @@ class DataManager:
             self.data_andamento_formatada.append(data_andamento_formatada)
 
             #Format Content
-            #TODO ENCODE TO UTF-8 TO SEND VIA EMAIL
-            content = andamento.split("-")[2]
-            self.formated_content.append(content)
-
-        # print(self.data_andamento_formatada)
+            content = andamento.split("-")[2].encode("utf-8", "replace")
+            content_encoded = smart_str(content)
+            # print(content_encoded)
+            self.formated_content.append(content_encoded)
         return self.data_andamento_formatada
 
 
-#TODO COLLECT DATE FROM SHEET, TURN INTO DATETIME OBJECT AND PASS IT TO FUNCTION AS ARGUMENT FOR COMPARISON
-    def compare_dates(self):
+    def get_last_date(self):
+        just_date = self.nova_lista[0].split("-")
+        last_date = just_date[0] + just_date[1]
+        return last_date
+
+
+    def compare_dates(self, last_date):
         num = 0
+
         for andamento in self.data_andamento_formatada:
-            if andamento > datetime.datetime(2010, 12, 10, 14, 35, 16):
+            if andamento > last_date:
                 self.novos_andamentos.append(self.nova_lista[num])
-            else:
-                pass
+                print(f"Novo andamento: {self.nova_lista[num]}")
+                return True
             num += 1
 
 
 
-    def process_info(self):
+            #return false otherwise
+
+    def format_andamentos(self):
         num = 0
-        for processo in self.novos_andamentos:
-            process_info = f"{self.p_number}:\n {self.novos_andamentos[num]}"
+        for andamento in self.formated_content:
+            self.andamentos_formated.append(f"{self.data_andamento_formatada[num].strftime('%d-%b-%Y %H:%M:%S')} {andamento}")
             num += 1
-            # print(process_info)
-
-    def to_dict(self):
-        self.andamentos_dict[self.p_number] = self.novos_andamentos
-        # print(self.andamentos_dict)
-        return self.andamentos_dict
+        return self.andamentos_formated
 
 
 
+
+
+
+
+
+ # def process_info(self):
+    #
+    #     num = 0
+    #     for processo in self.novos_andamentos:
+    #         process_info = f"{self.p_number}:\n {self.novos_andamentos[num]}"
+    #         num += 1
+    #         # print(process_info)
 
 
 
